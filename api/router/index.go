@@ -34,7 +34,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	)
 	e621Resp := &http.Response{}
 
-	if r.URL.Path[:5] == "/data" {
+	if len(r.URL.Path) > 4 && r.URL.Path[:5] == "/data" {
 		getStatic = true
 	}
 
