@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 )
@@ -40,14 +39,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if getStatic {
-		e621Resp, err = http.Get(E621StaticURL + r.URL.Path + url.QueryEscape(r.URL.RawPath))
+		e621Resp, err = http.Get(E621StaticURL + r.URL.Path + "?" + r.URL.RawPath)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
 			return
 		}
 	} else {
-		e621Resp, err = http.Get(E621Url + r.URL.Path + url.QueryEscape(r.URL.RawPath))
+		e621Resp, err = http.Get(E621Url + r.URL.Path + "?" + r.URL.RawPath)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
