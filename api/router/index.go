@@ -39,7 +39,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if getStatic {
-		e621Resp, err = http.Get(E621Url + r.URL.Path)
+		e621Resp, err = http.Get(E621StaticURL + r.URL.Path)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
