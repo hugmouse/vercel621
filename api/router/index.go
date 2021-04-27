@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -9,7 +10,8 @@ import (
 )
 
 const (
-	E621Url = "https://e621.net"
+	E621Url       = "https://e621.net"
+	E621StaticURL = "https://static1.e621.net"
 )
 
 var (
@@ -43,8 +45,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write(CombinedError(ErrBodyReadingError.Error(), err.Error()))
 		return
 	}
+
+	e621InfoMirrored := bytes.ReplaceAll(e621Info, []byte(E621StaticURL), []byte(r.Host))
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(e621Info)
+	_, err = w.Write(e621InfoMirrored)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write(CombinedError(ErrResponseWriterFailed.Error(), err.Error()))
