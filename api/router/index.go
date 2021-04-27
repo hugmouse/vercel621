@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -12,6 +13,14 @@ import (
 const (
 	E621Url       = "https://e621.net"
 	E621StaticURL = "https://static1.e621.net"
+	VercelBanner  = `<div style="background: #020f23;">
+	<p style="color: #ffe666;">Proxified through vercel621, made by Hugmouse. Original query: "%s"</p>
+	<details>
+		<summary>Debug info</summary>
+		<p>Request info:</p>
+		<pre style="color: #ffe666;">%#v</pre>
+	</details>
+</div>`
 )
 
 var (
@@ -66,9 +75,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e621InfoMirrored := bytes.ReplaceAll(e621Info, []byte(E621StaticURL), []byte("https://"+r.Host))
+	// Static images url replacement
+	e621Info = bytes.ReplaceAll(e621Info, []byte(E621StaticURL), []byte("https://"+r.Host))
+
+	// Adding banner
+	e621Info = bytes.ReplaceAll(e621Info, []byte("<body"),
+		[]byte(fmt.Sprintf(VercelBanner, r.URL.Path+"?"+r.URL.RawPath, r)+"<body"))
+
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(e621InfoMirrored)
+	_, err = w.Write(e621Info)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write(CombinedError(ErrResponseWriterFailed.Error(), err.Error()))
