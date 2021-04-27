@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -12,6 +13,14 @@ import (
 const (
 	E621Url       = "https://e621.net"
 	E621StaticURL = "https://static1.e621.net"
+	VercelBanner  = `<div style="background: #020f23; padding: 1em;">
+	<p style="color: #ffe666;">Proxified through vercel621, made by Hugmouse. Original query: "%s"</p>
+	<details>
+		<summary>Debug info</summary>
+		<p>Request info:</p>
+		<pre style="color: #ffe666;">%s</pre>
+	</details>
+</div>`
 )
 
 var (
@@ -39,14 +48,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if getStatic {
-		e621Resp, err = http.Get(E621StaticURL + r.URL.Path)
+		e621Resp, err = http.Get(E621StaticURL + r.URL.Path + "?" + r.URL.RawQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
 			return
 		}
 	} else {
-		e621Resp, err = http.Get(E621Url + r.URL.Path)
+		e621Resp, err = http.Get(E621Url + r.URL.Path + "?" + r.URL.RawQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
@@ -66,9 +75,20 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e621InfoMirrored := bytes.ReplaceAll(e621Info, []byte(E621StaticURL), []byte("https://"+r.Host))
+	// Static images url replacement
+	e621Info = bytes.ReplaceAll(e621Info, []byte(E621StaticURL), []byte("https://"+r.Host))
+
+	// Adding banner
+	// And also replacing verbose Go style output with ",\n\t" (pretty-printing of some sort)
+	e621Info = bytes.ReplaceAll(e621Info, []byte("<body"),
+		[]byte(
+			fmt.Sprintf(VercelBanner+"<body", r.URL.Path+"?"+r.URL.RawQuery,
+				strings.ReplaceAll(fmt.Sprintf("%#v", r), ", ", ",\n\t")),
+		),
+	)
+
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(e621InfoMirrored)
+	_, err = w.Write(e621Info)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write(CombinedError(ErrResponseWriterFailed.Error(), err.Error()))
