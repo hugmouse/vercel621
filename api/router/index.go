@@ -80,9 +80,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	// Adding banner
 	// And also replacing verbose Go style output with ",\n\t" (pretty-printing of some sort)
-	e621Info = bytes.ReplaceAll(e621Info, []byte("<body"),
+	e621Info = bytes.ReplaceAll(e621Info, []byte("data-th-nav=\"top\">"),
 		[]byte(
-			fmt.Sprintf(VercelBanner+"<body", r.URL.Path+"?"+r.URL.RawQuery,
+			fmt.Sprintf(VercelBanner+"data-th-nav=\"top\">", r.URL.Path+"?"+r.URL.RawQuery,
 				strings.ReplaceAll(fmt.Sprintf("%#v", r), ", ", ",\n\t")),
 		),
 	)
