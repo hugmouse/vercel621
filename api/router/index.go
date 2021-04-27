@@ -46,7 +46,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e621InfoMirrored := bytes.ReplaceAll(e621Info, []byte(E621StaticURL), []byte(r.Host))
+	e621InfoMirrored := bytes.ReplaceAll(e621Info, []byte(E621StaticURL), []byte("https://"+r.Host))
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(e621InfoMirrored)
 	if err != nil {
