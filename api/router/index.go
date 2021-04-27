@@ -82,8 +82,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// And also replacing verbose Go style output with ",\n\t" (pretty-printing of some sort)
 	e621Info = bytes.ReplaceAll(e621Info, []byte("<body"),
 		[]byte(
-			fmt.Sprintf(VercelBanner, r.URL.Path+"?"+r.URL.RawPath,
-				strings.ReplaceAll(fmt.Sprintf("%#v", r)+"<body", ", ", ",\n\t")),
+			fmt.Sprintf(VercelBanner+"<body", r.URL.Path+"?"+r.URL.RawQuery,
+				strings.ReplaceAll(fmt.Sprintf("%#v", r), ", ", ",\n\t")),
 		),
 	)
 
