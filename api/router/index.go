@@ -28,12 +28,32 @@ func CombinedError(errors ...string) []byte {
 
 // Handler is what does all the work
 func Handler(w http.ResponseWriter, r *http.Request) {
-	e621Resp, err := http.Get(E621Url + r.URL.Path)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
-		return
+	var (
+		getStatic bool
+		err       error
+	)
+	e621Resp := &http.Response{}
+
+	if r.URL.Path[:5] == "/data" {
+		getStatic = true
 	}
+
+	if getStatic {
+		e621Resp, err = http.Get(E621Url + r.URL.Path)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
+			return
+		}
+	} else {
+		e621Resp, err = http.Get(E621Url + r.URL.Path)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
+			return
+		}
+	}
+
 	if e621Resp.StatusCode != http.StatusOK {
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write(CombinedError(ErrNotOKCode.Error(), strconv.Itoa(e621Resp.StatusCode)))
