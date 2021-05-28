@@ -53,18 +53,18 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		e621Resp, err = http.Get(E621StaticURL + r.URL.Path + "?" + r.URL.RawQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Header().Set("Cache-Control", CacheAgeImages)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
 			return
 		}
+		w.Header().Set("Cache-Control", CacheAgeImages)
 	} else {
 		e621Resp, err = http.Get(E621Url + r.URL.Path + "?" + r.URL.RawQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Header().Set("Cache-Control", CacheAgeHTMLs)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
 			return
 		}
+		w.Header().Set("Cache-Control", CacheAgeHTMLs)
 	}
 
 	if e621Resp.StatusCode != http.StatusOK {
