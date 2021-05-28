@@ -21,6 +21,8 @@ const (
 		<pre style="color: #ffe666;">%s</pre>
 	</details>
 </div>`
+	CacheAgeImages = "s-maxage=2419200" // 28 days
+	CacheAgeHTMLs  = "s-maxage=3"       // 3 seconds
 )
 
 var (
@@ -51,6 +53,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		e621Resp, err = http.Get(E621StaticURL + r.URL.Path + "?" + r.URL.RawQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Set("Cache-Control", CacheAgeImages)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
 			return
 		}
@@ -58,6 +61,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		e621Resp, err = http.Get(E621Url + r.URL.Path + "?" + r.URL.RawQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Set("Cache-Control", CacheAgeHTMLs)
 			_, _ = w.Write(CombinedError(ErrRequestFailed.Error(), err.Error()))
 			return
 		}
